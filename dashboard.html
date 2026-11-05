@@ -126,8 +126,6 @@ ol.algo{counter-reset:s;list-style:none;padding:0}
 ol.algo li{counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);max-width:none}
 ol.algo li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;color:var(--panel);background:var(--accent);border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-size:13px}
 .edge li::marker{content:"⚠ ";color:var(--flow)}
-.explain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 14px}
-.explain .lbl{font-size:13px;color:var(--muted)}
 .pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:13.5px}
 .pill:hover{border-color:var(--accent);color:var(--accent)}
 .ai-out{white-space:normal;border:1px dashed var(--accent);border-radius:10px;padding:12px 16px;margin-bottom:16px;background:var(--accent-soft)}
@@ -186,13 +184,28 @@ pre.code .cm{color:var(--ok)}
 .vault-box h2{font-size:18px}
 .vault-box label{display:grid;gap:4px}
 
+/* 白話版與問答 */
+.plain-card{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;margin:4px 0 16px;scroll-margin-top:80px}
+.plain-card .lbl{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--ok)}
+.plain-card p{margin:.3em 0 0;max-width:80ch}
+.qa-best{border-left:3px solid var(--ok);padding:2px 0 2px 10px;margin-bottom:10px}
+.qa-q{font-weight:700;font-size:13.5px;color:var(--ok);margin-bottom:4px}
+.qa-src{font-size:12.5px;color:var(--muted);margin-top:6px}
+.qa-sub{font-size:12px;color:var(--muted);letter-spacing:.08em;margin:10px 0 4px}
+a.qa-pass{display:grid;gap:2px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:6px 0;background:var(--panel)}
+a.qa-pass:hover{border-color:var(--accent)}
+a.qa-pass b{font-size:13px;color:var(--accent)}
+a.qa-pass span{font-size:13px;color:var(--muted);line-height:1.6}
+mark{background:var(--flow-soft);color:inherit;border-radius:3px;padding:0 1px}
+.msg.a .opts{margin-top:6px}
+
 /* 檢查清單 */
 .cl-group{margin-bottom:16px}
 .cl-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)}
 .cl-item input{margin-top:6px;width:16px;height:16px;accent-color:var(--ok);flex:none}
 .cl-item label{cursor:pointer}
 
-/* AI 抽屜 */
+/* 問答抽屜 */
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:40;display:flex;flex-direction:column;
   transform:translateX(105%);transition:transform .25s;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px);box-shadow:-12px 0 30px rgba(0,0,0,.12)}
 .drawer.open{transform:none}
@@ -238,8 +251,7 @@ pre.code .cm{color:var(--ok)}
     <a href="#checklist" data-nav="checklist">理解檢查清單</a>
   </nav>
   <div class="prog" title="已掌握的站點"><span id="progTxt">0 / 11</span><span class="bar"><i id="progBar"></i></span></div>
-  <button class="btn" id="aiSet" type="button" title="設定 AI 模型（OpenAI API key）">AI 設定</button>
-  <button class="ai-btn" id="aiOpen" type="button">AI 助教</button>
+  <button class="ai-btn" id="aiOpen" type="button">問答</button>
 </div></header>
 
 <main class="wrap">
@@ -263,8 +275,8 @@ pre.code .cm{color:var(--ok)}
     </div>
     <div class="mapbox"><svg id="netmap" viewBox="0 0 1000 540" role="img" aria-label="學習路線網路圖"></svg></div>
     <div class="maprow">
-      <div class="card"><h3>每一站怎麼學</h3><p>先讀「為什麼」，接著看模型、定理與證明思路、演算法、數值範例與邊界情況，最後做自我檢測。卡住時可以按「換個方式解釋」，讓 AI 用 ELI5、ELI14、實習生或研究生的深度重講。</p></div>
-      <div class="card"><h3>用你的話說一遍</h3><p>每站的開放題都要你用自己的話說明，再交給 AI 助教批改：指出缺漏，並往更深一層追問「為什麼」。</p></div>
+      <div class="card"><h3>每一站怎麼學</h3><p>先讀「為什麼」，接著看模型、定理與證明思路、演算法、數值範例與邊界情況，最後做自我檢測。卡住時先讀每站開頭的「白話版」，或按右上角的「問答」搜尋常見問題。</p></div>
+      <div class="card"><h3>用你的話說一遍</h3><p>每站的開放題要你先用自己的話寫下來，再展開「參考要點」逐項對照，找出自己漏掉的地方。「問答」裡的「考考我」可以隨機出題複習。</p></div>
       <div class="card"><h3>動手算</h3><p>「演算法實驗室」重現論文中的數值：d-MP、d-MC、最快路徑的下邊界點與可靠度，每一步都看得到。</p></div>
     </div>
     <div class="stations" id="stList"></div>
@@ -290,31 +302,32 @@ pre.code .cm{color:var(--ok)}
 </main>
 
 <div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" aria-label="AI 助教" aria-hidden="true">
+<aside class="drawer" id="drawer" aria-label="問答" aria-hidden="true">
   <div class="dh">
-    <div class="row"><h2>AI 助教</h2><button class="btn" id="aiClose" type="button">關閉</button></div>
-    <div class="modes" role="group" aria-label="助教模式">
-      <button type="button" data-mode="ask" aria-pressed="true">自由問答</button>
-      <button type="button" data-mode="socratic" aria-pressed="false">考考我</button>
-      <button type="button" data-mode="review" aria-pressed="false">批改我的說明</button>
+    <div class="row"><h2>問答</h2><button class="btn" id="qaClose" type="button">關閉</button></div>
+    <div class="modes" role="group" aria-label="模式">
+      <button type="button" data-qmode="ask" aria-pressed="true">問答搜尋</button>
+      <button type="button" data-qmode="quiz" aria-pressed="false">考考我</button>
     </div>
-    <div class="ctx" id="aiCtx">目前脈絡：全部九篇</div>
+    <div class="ctx" id="qaCtx">目前站點：全部九篇</div>
   </div>
   <div class="msgs" id="msgs" aria-live="polite"></div>
   <div class="sugg" id="sugg"></div>
-  <form class="din" id="aiForm">
-    <textarea id="aiInput" placeholder="例如：為什麼無迴圈網路中每個 d-MP 候選都是 d-MP？" aria-label="輸入問題"></textarea>
+  <form class="din" id="qaForm">
+    <textarea id="qaInput" placeholder="例如：為什麼無迴圈網路的候選都是 d-MP？" aria-label="輸入問題"></textarea>
     <div class="row" style="justify-content:space-between">
-      <span class="status" id="aiStatus"></span>
-      <span class="row"><button type="button" class="btn" id="aiStop" hidden>停止</button><button type="button" class="btn" id="aiReset">清除對話</button><button class="btn solid" type="submit" id="aiSend">送出</button></span>
+      <span class="status">從網站現有內容搜尋，不使用 AI</span>
+      <span class="row"><button type="button" class="btn" id="qaReset">清除</button><button class="btn solid" type="submit">搜尋</button></span>
     </div>
   </form>
 </aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="ai.js"></script>
 <script src="vault.js"></script>
 <script src="papers.js"></script>
+<script src="extras.js"></script>
+<script src="faq.js"></script>
 <script src="practice-data.js"></script>
 <script src="practice.js"></script>
+<script src="qa.js"></script>
 <script src="app.js"></script>

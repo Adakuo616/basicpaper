@@ -84,7 +84,6 @@ async function downloadOrig(btn){
 }
 
 /* ---------- 站點頁 ---------- */
-const LEVELS=[["eli5","ELI5（像對五歲小孩）"],["eli14","ELI14（像對國中生）"],["intern","實習生版"],["deep","研究生深挖"]];
 function shuffleIdx(n){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 function renderStation(id){
@@ -102,7 +101,7 @@ function renderStation(id){
   if(s.edge) secs.push(["edge","邊界情況",`<h2><span class="q">EDGE CASES</span>邊界情況與限制</h2><ul class="edge">${s.edge.map(x=>`<li>${x}</li>`).join("")}</ul>`]);
   if(s.contrib) secs.push(["ctx","貢獻與影響",`<h2><span class="q">CONTEXT</span>貢獻與更廣的脈絡</h2><p><b>貢獻：</b>${s.contrib}</p><p><b>後續延伸：</b>${s.future}</p>`]);
   secs.push(["quiz","自我檢測",`<h2><span class="q">CHECK</span>自我檢測</h2><p class="note">選項順序每次重新洗牌；答錯時不會直接公布答案，你可以再想一次，或按「看解答」。全部答對後才能標記為已掌握。</p><div class="quiz" id="quiz"></div>
-    <h3 style="font-size:16px;margin:18px 0 6px">用你自己的話說明</h3>${s.open.map((q,i)=>`<div class="qitem"><div class="qq">${q}</div><textarea id="open-${s.id}-${i}" data-i="${i}" placeholder="先寫下你的理解，不必完美，AI 助教會幫你找出缺漏。">${esc(st.open[s.id+"-"+i]||"")}</textarea><div class="row" style="margin-top:8px"><button class="btn solid" type="button" data-review="${i}">請 AI 助教批改</button></div><div class="ai-slot" id="rv-${i}"></div></div>`).join("")}
+    <h3 style="font-size:16px;margin:18px 0 6px">用你自己的話說明</h3>${s.open.map((q,i)=>`<div class="qitem"><div class="qq">${q}</div><textarea id="open-${s.id}-${i}" data-i="${i}" placeholder="先寫下你的理解，不必完美。寫完再展開下面的參考要點，逐項對照自己漏了什麼。">${esc(st.open[s.id+"-"+i]||"")}</textarea>${keyPoints(s,i)}</div>`).join("")}
     <div class="master" id="masterBox" style="margin-top:16px"></div>`]);
 
   const prev=S[idx-1], next=S[idx+1];
@@ -112,10 +111,9 @@ function renderStation(id){
       ${s.venue?`<div class="cite">論文 ${s.no} · ${esc(s.authors)} · <i>${esc(s.venue)}</i> (${s.year})</div>`:""}
       ${ORIG[s.id]?origRow(s):""}
       ${s.tag?`<div class="tag">${s.tag}</div>`:""}
-    </div><button class="btn" type="button" id="askHere">就這一站問 AI</button></div>
+    </div><button class="btn" type="button" id="askHere">就這一站提問</button></div>
     ${k==="locked"?`<div class="sec" style="border-color:var(--flow)"><b>這一站尚未開放。</b>建議先掌握：${s.pre.map(p=>`<a href="#${p}">${byId[p].short} ${esc(byId[p].label)}</a>`).join("、")}。也可以在學習網路圖上開啟「自由探索模式」。</div>`:""}
-    <div class="explain"><span class="lbl">換個方式解釋這一站：</span>${LEVELS.map(l=>`<button class="pill" type="button" data-level="${l[0]}">${l[1]}</button>`).join("")}</div>
-    <div id="explainOut"></div>
+    ${(window.EXTRAS||{})[s.id]?`<div class="plain-card" id="plain"><span class="lbl">白話版</span><p>${window.EXTRAS[s.id].plain}</p></div>`:""}
     <div class="layout"><nav class="toc" aria-label="本站目錄">${secs.map(x=>`<a href="#${s.id}" data-jump="sec-${x[0]}">${x[1]}</a>`).join("")}</nav>
     <div>${secs.map(x=>`<section class="sec" id="sec-${x[0]}">${x[2]}</section>`).join("")}
     <div class="pager">${prev?`<a class="btn" href="#${prev.id}">← ${prev.short} ${esc(prev.label)}</a>`:"<span></span>"}${next?`<a class="btn" href="#${next.id}">${next.short} ${esc(next.label)} →</a>`:""}</div></div></div>`;
@@ -123,12 +121,13 @@ function renderStation(id){
   v.querySelectorAll("[data-dl]").forEach(b=>b.addEventListener("click",()=>downloadOrig(b)));
   v.querySelectorAll("[data-jump]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();document.getElementById(a.dataset.jump).scrollIntoView();}));
   renderQuiz(s);
-  v.querySelectorAll("[data-level]").forEach(b=>b.addEventListener("click",()=>explain(s,b.dataset.level,b.textContent)));
   v.querySelectorAll("textarea[id^=open-]").forEach(t=>t.addEventListener("input",()=>{st.open[s.id+"-"+t.dataset.i]=t.value;save();}));
-  v.querySelectorAll("[data-review]").forEach(b=>b.addEventListener("click",()=>reviewOpen(s,+b.dataset.review)));
-  $("#askHere").addEventListener("click",()=>{ctxId=s.id;openDrawer();});
-  ctxId=s.id; updateCtx();
+  $("#askHere").addEventListener("click",()=>window.QA.open(s.id));
+  ctxId=s.id;
 }
+
+function keyPoints(s,i){const k=((window.EXTRAS||{})[s.id]||{}).openKey; const pts=k&&k[i]; if(!pts) return "";
+  return `<details class="proof" style="margin-top:8px"><summary>寫完了？展開參考要點，逐項對照</summary><div><ol style="margin:.2em 0;padding-left:1.3em">${pts.map(p=>`<li>${p}</li>`).join("")}</ol><p class="note" style="margin:.4em 0 0">每一點都有寫到，而且能說明「為什麼」，才算真正掌握。漏掉的部分，回到上面對應的段落再讀一次。</p></div></details>`;}
 
 function renderQuiz(s){
   const box=$("#quiz"); const rec=st.quiz[s.id]||(st.quiz[s.id]={});
@@ -162,112 +161,9 @@ function checkMaster(s){
   if(allOk) $("#mk").onclick=()=>{st.mastered[s.id]=true;save();updateProgress();renderStation(s.id);};
 }
 
-/* ---------- AI（sample 能力） ---------- */
-const aiErr=e=>window.AI.errText(e);
-
-function kbFor(id){
-  const one=s=>{let t=`### ${s.short} ${s.title}${s.venue?` (${s.authors}, ${s.venue}, ${s.year})`:""}\n`;
-    if(s.tag) t+="主旨："+strip(s.tag)+"\n"; t+="動機："+strip(s.why)+"\n";
-    (s.concepts||[]).forEach(c=>t+="- "+strip(c[0])+"："+strip(c[1])+"\n");
-    (s.model||[]).forEach(c=>t+="- 模型："+strip(c)+"\n");
-    (s.defs||[]).forEach(c=>t+="- 定義 "+strip(c[0])+"："+strip(c[1])+"\n");
-    (s.theorems||[]).forEach(c=>t+="- "+strip(c.n)+"："+strip(c.s)+"（證明思路："+strip(c.p)+"）\n");
-    (s.algo||[]).forEach((c,i)=>t+=`- 步驟${i+1}：`+strip(c)+"\n");
-    if(s.example) t+="範例："+strip(s.example)+"\n";
-    if(s.complexity) t+="複雜度："+strip(s.complexity)+"\n";
-    (s.edge||[]).forEach(c=>t+="- 邊界情況："+strip(c)+"\n");
-    if(s.contrib) t+="貢獻："+strip(s.contrib)+"；延伸："+strip(s.future)+"\n";
-    return t;};
-  const focus=id&&byId[id];
-  const others=S.filter(s=>!focus||s.id!==focus.id).map(s=>`${s.short}：${s.title}${s.tag?"，"+strip(s.tag):""}`).join("\n");
-  return (focus? "【目前站點的完整筆記】\n"+one(focus)+"\n【其他站點摘要】\n"+others : S.map(one).join("\n"));
-}
-const BASE=`你是一位教學成效極高、思考深入的研究所導師，指導碩博士生研讀「隨機（多狀態）流量網路可靠度」領域的九篇基礎論文（Jane/Lin/Yuan 1993、Lin/Jane/Yuan 1995，以及 Yi-Kuei Lin 2001–2011 的延伸研究）。
-規則：
-1. 一律使用繁體中文（台灣用語）。數學用 Unicode 符號表示（例如 Σ、≤、⌈ ⌉、x_i、X^1），不要用 LaTeX。
-2. 以下方提供的筆記為主要依據；超出筆記的內容要明說「這是一般背景知識，不在論文中」，不知道就說不知道，不可捏造數值或引用。
-3. 重視「為什麼」：說明動機、設計決策的理由，以及邊界情況，並在適當時往更深一層追問。
-4. 格式：短段落，可用 - 項目符號與 **粗體**，不要用表格或標題符號 #。回答控制在 350 字以內，除非使用者要求更詳細。`;
-
-async function runSample(input,{onText,signal}={}){ return window.AI.ask(input,{onText,signal}); }
-function md(t){
-  const lines=esc(t).split(/\n/); let out="",list=null;
-  const inline=s=>s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,"<code>$1</code>");
-  for(const raw of lines){const l=raw.trim();
-    const ul=l.match(/^[-•*]\s+(.*)/), ol=l.match(/^\d+[.)、]\s+(.*)/);
-    if(ul||ol){const tag=ul?"ul":"ol"; if(list!==tag){if(list)out+=`</${list}>`;out+=`<${tag}>`;list=tag;} out+=`<li>${inline((ul||ol)[1])}</li>`;continue;}
-    if(list){out+=`</${list}>`;list=null;}
-    if(l) out+=`<p>${inline(l)}</p>`;}
-  if(list) out+=`</${list}>`; return out;
-}
-
-async function explain(s,level,label){
-  const out=$("#explainOut");
-  const how={eli5:"像對五歲小孩解釋：用生活比喻（水管、道路、送貨），完全不用符號，150 字內。",
-    eli14:"像對國中生解釋：可用簡單的數學與一個具體小例子，但不用專有名詞或先定義它，250 字內。",
-    intern:"像對剛進實驗室的實習生解釋：說清楚要解決的問題、輸入輸出、演算法每一步在做什麼，以及實作時要注意的坑（去重、邊界情況），300 字內。",
-    deep:"以研究生深挖的角度：說明關鍵定理為什麼成立、假設在哪裡被用到、這篇的限制或可能的漏洞，以及可延伸的研究問題，最後提出一個追問給學生思考。400 字內。"}[level];
-  out.innerHTML=`<div class="ai-out"><div class="h">${esc(label)} · ${esc(s.short)}</div><div class="body">思考中…</div></div>`;
-  const body=out.querySelector(".body");
-  try{ await runSample(BASE+"\n\n任務："+how+"\n請解釋這一站的核心內容。\n\n"+kbFor(s.id),{onText:({text})=>{body.innerHTML=md(text);}}); }
-  catch(e){ body.textContent=aiErr(e); }
-}
-
-async function reviewOpen(s,i){
-  const ta=document.getElementById(`open-${s.id}-${i}`), slot=document.getElementById("rv-"+i);
-  const ans=ta.value.trim();
-  if(ans.length<10){slot.innerHTML=`<div class="fb no">先寫下至少一兩句你的理解，再請 AI 助教批改。</div>`;return;}
-  slot.innerHTML=`<div class="ai-out" style="margin-top:10px"><div class="h">AI 助教批改</div><div class="body">思考中…</div></div>`;
-  const body=slot.querySelector(".body");
-  const prompt=BASE+`\n\n任務：批改學生用自己的話寫的說明。請依序給出：
-- **你掌握的部分**：具體指出說對的地方
-- **缺漏或誤解**：逐點指出，並解釋正確的觀念與原因
-- **往下追問**：提出 1 個更深一層的「為什麼」問題（不要附答案）
-最後給一個整體判斷：「已掌握／大致掌握／需要再加強」。
-
-題目：${strip(s.open[i])}
-學生的說明：${ans}
-
-${kbFor(s.id)}`;
-  try{ await runSample(prompt,{onText:({text})=>{body.innerHTML=md(text);}}); }
-  catch(e){ body.textContent=aiErr(e); }
-}
-
-/* ---------- AI 抽屜（多輪對話） ---------- */
-let ctxId=null, mode="ask", turns=[], ctl=null;
-const SUGG={ask:["d-MP 和 d-MC 的差別是什麼？為什麼兩種都需要？","為什麼排容原理會隨 d-MP 數量爆炸？","這一站的方法有哪些可能的漏洞？"],
-  socratic:["開始考我這一站","用選擇題考我","考我邊界情況"],
-  review:["我來說明 d-MP 的定義，請批改","我來說明這一站的演算法，請批改"]};
-function updateCtx(){ const c="目前脈絡："+(ctxId&&byId[ctxId]?byId[ctxId].short+" "+byId[ctxId].label:"全部九篇"); $("#aiCtx").textContent=c;
-  window.AI.label().then(l=>{$("#aiCtx").textContent=c+" · 模型："+l;});
-  $("#sugg").innerHTML=SUGG[mode].map(q=>`<button type="button">${esc(q)}</button>`).join("");
-  $("#sugg").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("#aiInput").value=b.textContent;$("#aiForm").requestSubmit();});}
-function openDrawer(){ $("#drawer").classList.add("open"); $("#drawer").setAttribute("aria-hidden","false"); $("#scrim").hidden=false; updateCtx();
-  if(!turns.length) addMsg("a",md("你好！我是這九篇論文的 AI 助教。\n- **自由問答**：問任何概念、證明或例子\n- **考考我**：我會一次問你一個問題，等你回答後再追問\n- **批改我的說明**：用你自己的話解釋，我來找出缺漏\n請先選一個站點，或直接提問。"),true);
-  setTimeout(()=>$("#aiInput").focus(),50);}
-function closeDrawer(){ $("#drawer").classList.remove("open"); $("#drawer").setAttribute("aria-hidden","true"); $("#scrim").hidden=true; }
-$("#aiOpen").onclick=()=>{ if(!location.hash.match(/^#(p\d|basics|frontier)$/)) ctxId=null; openDrawer(); };
-$("#aiClose").onclick=closeDrawer; $("#scrim").onclick=closeDrawer;
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();});
-document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll("[data-mode]").forEach(x=>x.setAttribute("aria-pressed",x===b));updateCtx();});
-function addMsg(who,html,isHtml){const d=document.createElement("div");d.className="msg "+who;if(isHtml)d.innerHTML=html;else d.textContent=html;$("#msgs").appendChild(d);$("#msgs").scrollTop=1e9;return d;}
-$("#aiReset").onclick=()=>{turns=[];$("#msgs").innerHTML="";openDrawer();};
-$("#aiStop").onclick=()=>ctl&&ctl.abort();
-$("#aiForm").addEventListener("submit",async e=>{
-  e.preventDefault(); const q=$("#aiInput").value.trim(); if(!q||ctl) return;
-  $("#aiInput").value=""; addMsg("u",q); turns.push({role:"user",content:q});
-  const modeRule={ask:"模式：自由問答。直接、清楚地回答，必要時舉論文中的例子。",
-    socratic:"模式：考考我（蘇格拉底式）。一次只問一個問題（可以是開放題或附 A–D 選項的選擇題，正確選項的位置要隨機變換），然後停下來等學生回答。學生回答後，先評估對錯與缺漏、補充原因，再問下一個更深一層的問題。在學生作答之前，絕不公布答案。",
-    review:"模式：批改我的說明。學生會用自己的話解釋概念；請指出說對的部分、缺漏與誤解（附原因），並提出一個追問。若學生還沒開始說明，請請他先用自己的話說說看。"}[mode];
-  const rules=BASE+"\n"+modeRule+"\n\n"+kbFor(ctxId);
-  const bubble=addMsg("a","思考中…"); ctl=new AbortController(); $("#aiStop").hidden=false; $("#aiSend").disabled=true; $("#aiStatus").textContent="";
-  try{ const {text,truncated}=await runSample([{role:"user",content:rules},{role:"assistant",content:"好的，我會依照這些規則與筆記回答。"},...turns],{signal:ctl.signal,onText:({text})=>{bubble.innerHTML=md(text);$("#msgs").scrollTop=1e9;}});
-    bubble.innerHTML=md(text); turns.push({role:"assistant",content:text}); if(truncated)$("#aiStatus").textContent="回答被截斷，可以請它繼續。";
-    if(turns.length>16) turns=turns.slice(-16);
-  }catch(err){ turns.pop(); if(err.text){bubble.innerHTML=md(err.text);} else bubble.textContent=aiErr(err); }
-  finally{ ctl=null; $("#aiStop").hidden=true; $("#aiSend").disabled=false; }
-});
-$("#aiInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("#aiForm").requestSubmit();}});
+/* ---------- 問答（離線搜尋，見 qa.js） ---------- */
+let ctxId=null;
+$("#aiOpen").onclick=()=>{ const m=location.hash.match(/^#(p\d|basics|frontier)$/); window.QA.open(m?m[1]:null); };
 
 /* ---------- 演算法實驗室 ---------- */
 const cge=(d,v)=>Object.entries(d).reduce((s,[k,p])=>+k>=v?s+p:s,0);
@@ -408,7 +304,7 @@ const CL=[
 function renderChecklist(){
   const total=CL.reduce((s,g)=>s+g[1].length,0), done=Object.values(st.cl).filter(Boolean).length;
   $("#v-checklist").innerHTML=`<div class="eyebrow">理解檢查清單 · ${done} / ${total}</div><h1 style="font-size:clamp(22px,3vw,30px);margin:4px 0 6px">你真的懂了嗎？</h1>
-  <p class="note" style="max-width:70ch">只有在你能<b>不看資料、用自己的話說出來</b>，並答對相關測驗時才打勾。可以搭配 AI 助教的「批改我的說明」模式自我檢查。</p>
+  <p class="note" style="max-width:70ch">只有在你能<b>不看資料、用自己的話說出來</b>，並答對相關測驗時才打勾。可以先寫下自己的說明，再對照各站開放題的「參考要點」，或用「問答 → 考考我」隨機複習。</p>
   ${CL.map(g=>`<div class="card cl-group"><h3>${g[0]}</h3>${g[1].map(([k,t])=>`<div class="cl-item"><input type="checkbox" id="cl-${k}" ${st.cl[k]?"checked":""}><label for="cl-${k}">${t}</label></div>`).join("")}</div>`).join("")}`;
   document.querySelectorAll("[id^=cl-]").forEach(c=>c.onchange=()=>{st.cl[c.id.slice(3)]=c.checked;save();renderChecklist();});
 }
@@ -420,13 +316,13 @@ function route(){
   const isSt=!!byId[h];
   document.querySelectorAll(".view").forEach(v=>v.hidden=true);
   document.querySelectorAll("[data-nav]").forEach(a=>a.removeAttribute("aria-current"));
-  if(isSt){$("#v-station").hidden=false;renderStation(h);}
+  if(isSt){$("#v-station").hidden=false;renderStation(h);
+    if(window.__jumpTo){const id=window.__jumpTo;window.__jumpTo=null;setTimeout(()=>{const el=document.getElementById(id);el&&el.scrollIntoView({block:"start"});},0);updateProgress();return;}}
   else{const id=views[h]||"v-map";$("#"+id).hidden=false;const n=document.querySelector(`[data-nav="${views[h]?h:"map"}"]`);n&&n.setAttribute("aria-current","page");
     if(id==="v-map"){drawMap();ctxId=null;} if(id==="v-lab")renderLab(); if(id==="v-checklist")renderChecklist(); if(window.PRACTICE_VIEWS&&window.PRACTICE_VIEWS[h]) window.PRACTICE_VIEWS[h]();}
   window.scrollTo(0,0); updateProgress();
 }
 window.addEventListener("hashchange",route);
 route();
-$("#aiSet").onclick=()=>window.AI.openSettings();
-document.addEventListener("ai-config-changed",updateCtx);
+
 })();

@@ -219,6 +219,7 @@ function hl(src){
 }
 function renderCode(){
   const v=$("#v-code"), d=D();
+  if(window.__codeFile){cst.file=window.__codeFile;window.__codeFile=null;}
   if(!d){v.innerHTML=`<div class="eyebrow">程式教學</div><h1 style="font-size:28px;margin:4px 0 10px">從論文到程式</h1>`+NODATA;wireUnlock(v,renderCode);return;}
   const files=Object.keys(d.code);
   const grp=f=>(NOTES[f]&&NOTES[f].g)||"other";
@@ -238,7 +239,7 @@ function renderCode(){
         ${n.walk.length?`<h3 style="font-size:15px;margin-top:8px">逐段說明</h3><ol class="algo">${n.walk.map(w=>`<li><span>${w}</span></li>`).join("")}</ol>`:""}
         ${n.pit.length?`<h3 style="font-size:15px;margin-top:8px">注意事項</h3><ul class="edge">${n.pit.map(w=>`<li>${w}</li>`).join("")}</ul>`:""}
         ${n.think?`<div class="qitem" style="margin-top:8px"><div class="qq">思考題：${n.think}</div></div>`:""}
-        <div class="explain" style="margin-top:10px"><span class="lbl">請 AI 助教：</span><button class="pill" type="button" data-ai="line">逐行解釋</button><button class="pill" type="button" data-ai="map">對應論文步驟</button><button class="pill" type="button" data-ai="bug">找潛在問題</button><button class="pill" type="button" data-ai="py">改寫成 Python</button></div><div id="codeAi"></div></div>
+</div>
       <div class="card" style="min-width:0"><div class="row" style="justify-content:space-between"><b class="mono">原始碼</b><span class="row"><button class="btn" type="button" id="copyCode">複製</button><span class="note" id="copyMsg"></span></span></div>
         <pre class="code" id="codePre">${hl(d.code[cst.file])}</pre></div>
     </div></div>
@@ -250,44 +251,7 @@ function renderCode(){
     const z=new JSZip();Object.entries(d.code).forEach(([k,s])=>z.file(k.replace("（補上）","_added_by_dashboard"),s));m.textContent="壓縮中…";
     const blob=await z.generateAsync({type:"blob"});save("MATLAB_reliability_code.zip",blob,m);};
   v.querySelectorAll("[data-tool]").forEach(b=>b.onclick=async()=>{const m=b.parentElement.querySelector(".dlmsg");try{m.textContent="準備檔案中…";save(b.dataset.tool.split("/").pop(),await window.VAULT.fetchBlob(b.dataset.tool),m);}catch(e){m.textContent=window.VAULT.errText(e);}});
-  v.querySelectorAll("[data-ai]").forEach(b=>b.onclick=()=>codeAI(b.dataset.ai,b.textContent,n));
 }
-async function codeAI(kind,label,n){
-  const out=$("#codeAi"); const src=D().code[cst.file];
-  out.innerHTML=`<div class="ai-out"><div class="h">${esc(label)} · ${esc(cst.file)}</div><div class="body">思考中…</div></div>`; const body=out.querySelector(".body");
-  const task={line:"逐段（不必每一行）解釋這支 MATLAB 程式在做什麼，特別說明變數的意義、迴圈與遞迴的目的。",
-    map:"說明這支程式對應到哪篇論文、演算法的哪一步，以及程式和論文的寫法有哪些差異。",
-    bug:"以嚴謹的程式審查角度，找出潛在的錯誤、邊界情況、效能問題，或與論文定義不一致的地方，並給出具體的修正建議。不要捏造不存在的問題，不確定時要說明。",
-    py:"把這支程式改寫成清楚、可讀、加上中文註解的 Python（使用 numpy），並說明索引從 0 開始時要修改哪些地方。"}[kind];
-  const prompt=`你是研究所導師，指導碩博士生閱讀「多狀態流量網路可靠度」實驗室的 MATLAB 程式。一律用繁體中文（台灣用語），數學用 Unicode，不用 LaTeX。格式：短段落、- 項目符號、**粗體**；程式碼用 \`行內\` 表示，Python 改寫可以用多行（每行之前加四個空格）。
-背景筆記：${strip(n.paper)}；${strip(n.what)}；注意事項：${n.pit.map(strip).join("；")}
-實驗室約定：路徑矩陣存的是弧編號；RSDP 用存活函數 Pr{x≥k}，RSDP_MC 用 CDF；索引 = 容量 + 1。
-任務：${task}
-
-檔名：${cst.file}
-\`\`\`matlab
-${src}
-\`\`\``;
-  try{ await window.AI.ask(prompt,{onText:({text})=>{body.innerHTML=mdLite(text);}}); }
-  catch(e){ body.textContent=window.AI.errText(e); }
-}
-function strip(h){return String(h).replace(/<[^>]+>/g,"");}
-function mdLite(t){
-  const lines=esc(t).split("\n");let out="",list=false,pre=false,ind=false;
-  const PRE='<pre class="code" style="max-height:none">';
-  for(const raw of lines){
-    if(/^\s*```/.test(raw)){if(ind){out+="</pre>";ind=false;}out+=pre?"</pre>":PRE;pre=!pre;continue;}
-    if(pre){out+=raw+"\n";continue;}
-    if(/^ {4}/.test(raw)){if(list){out+="</ul>";list=false;}if(!ind){out+=PRE;ind=true;}out+=raw.slice(4)+"\n";continue;}
-    if(ind){out+="</pre>";ind=false;}
-    const l=raw.trim(), m=l.match(/^[-•*]\s+(.*)|^\d+[.)、]\s+(.*)/);
-    const inl=s=>s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,"<code>$1</code>");
-    if(m){if(!list){out+="<ul>";list=true;}out+=`<li>${inl(m[1]||m[2])}</li>`;continue;}
-    if(list){out+="</ul>";list=false;} if(l) out+=`<p>${inl(l)}</p>`;
-  }
-  if(list)out+="</ul>"; if(pre||ind)out+="</pre>"; return out;
-}
-
 /* ---------- 下載區 ---------- */
 async function renderFiles(){
   const v=$("#v-files"); const m=await window.VAULT.getManifest();
@@ -313,5 +277,6 @@ async function renderFiles(){
     catch(e){msg.textContent=window.VAULT.errText(e);}};
 }
 
+window.CODE_NOTES=NOTES;
 window.PRACTICE_VIEWS={practice:renderPractice,code:renderCode,files:renderFiles};
 })();

@@ -1,4 +1,4 @@
-/* 九篇基礎論文的知識庫：同時用於畫面渲染與 AI 助教的脈絡 */
+/* 九篇基礎論文的知識庫：同時用於畫面渲染與離線問答的搜尋 */
 window.STATIONS = [
 {
   id: "basics", kind: "hub", short: "s", label: "基礎營地", year: "", venue: "",
