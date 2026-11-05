@@ -163,10 +163,7 @@ function checkMaster(s){
 }
 
 /* ---------- AI（sample 能力） ---------- */
-let samplePromise=null;
-function getSample(){ if(!samplePromise){ samplePromise = (window.claude&&window.claude.use)? window.claude.use("sample").catch(()=>null) : Promise.resolve(null);} return samplePromise; }
-const errCopy=c=>({not_granted:"你沒有允許這個頁面使用 Claude，所以 AI 功能已關閉。重新整理頁面可以再次選擇。",rate_limited:"請求太頻繁，請稍等一下再試。",cancelled:"已停止。"}[c]||"AI 暫時無法回應（"+c+"），請稍後再試。");
-const NO_AI="這個環境無法使用 AI 助教。請在 claude.ai 開啟此頁面才能使用；其他功能都可以照常使用。";
+const aiErr=e=>window.AI.errText(e);
 
 function kbFor(id){
   const one=s=>{let t=`### ${s.short} ${s.title}${s.venue?` (${s.authors}, ${s.venue}, ${s.year})`:""}\n`;
@@ -192,10 +189,7 @@ const BASE=`你是一位教學成效極高、思考深入的研究所導師，�
 3. 重視「為什麼」：說明動機、設計決策的理由，以及邊界情況，並在適當時往更深一層追問。
 4. 格式：短段落，可用 - 項目符號與 **粗體**，不要用表格或標題符號 #。回答控制在 350 字以內，除非使用者要求更詳細。`;
 
-async function runSample(input,{onText,signal}={}){
-  const sample=await getSample(); if(!sample) throw {code:"unavailable"};
-  return sample(input,{onText,signal,cache:false});
-}
+async function runSample(input,{onText,signal}={}){ return window.AI.ask(input,{onText,signal}); }
 function md(t){
   const lines=esc(t).split(/\n/); let out="",list=null;
   const inline=s=>s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/`([^`]+)`/g,"<code>$1</code>");
@@ -216,7 +210,7 @@ async function explain(s,level,label){
   out.innerHTML=`<div class="ai-out"><div class="h">${esc(label)} · ${esc(s.short)}</div><div class="body">思考中…</div></div>`;
   const body=out.querySelector(".body");
   try{ await runSample(BASE+"\n\n任務："+how+"\n請解釋這一站的核心內容。\n\n"+kbFor(s.id),{onText:({text})=>{body.innerHTML=md(text);}}); }
-  catch(e){ body.textContent=e.code==="unavailable"?NO_AI:errCopy(e.code); }
+  catch(e){ body.textContent=aiErr(e); }
 }
 
 async function reviewOpen(s,i){
@@ -236,7 +230,7 @@ async function reviewOpen(s,i){
 
 ${kbFor(s.id)}`;
   try{ await runSample(prompt,{onText:({text})=>{body.innerHTML=md(text);}}); }
-  catch(e){ body.textContent=e.code==="unavailable"?NO_AI:errCopy(e.code); }
+  catch(e){ body.textContent=aiErr(e); }
 }
 
 /* ---------- AI 抽屜（多輪對話） ---------- */
@@ -244,7 +238,8 @@ let ctxId=null, mode="ask", turns=[], ctl=null;
 const SUGG={ask:["d-MP 和 d-MC 的差別是什麼？為什麼兩種都需要？","為什麼排容原理會隨 d-MP 數量爆炸？","這一站的方法有哪些可能的漏洞？"],
   socratic:["開始考我這一站","用選擇題考我","考我邊界情況"],
   review:["我來說明 d-MP 的定義，請批改","我來說明這一站的演算法，請批改"]};
-function updateCtx(){ $("#aiCtx").textContent="目前脈絡："+(ctxId&&byId[ctxId]?byId[ctxId].short+" "+byId[ctxId].label:"全部九篇");
+function updateCtx(){ const c="目前脈絡："+(ctxId&&byId[ctxId]?byId[ctxId].short+" "+byId[ctxId].label:"全部九篇"); $("#aiCtx").textContent=c;
+  window.AI.label().then(l=>{$("#aiCtx").textContent=c+" · 模型："+l;});
   $("#sugg").innerHTML=SUGG[mode].map(q=>`<button type="button">${esc(q)}</button>`).join("");
   $("#sugg").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("#aiInput").value=b.textContent;$("#aiForm").requestSubmit();});}
 function openDrawer(){ $("#drawer").classList.add("open"); $("#drawer").setAttribute("aria-hidden","false"); $("#scrim").hidden=false; updateCtx();
@@ -269,7 +264,7 @@ $("#aiForm").addEventListener("submit",async e=>{
   try{ const {text,truncated}=await runSample([{role:"user",content:rules},{role:"assistant",content:"好的，我會依照這些規則與筆記回答。"},...turns],{signal:ctl.signal,onText:({text})=>{bubble.innerHTML=md(text);$("#msgs").scrollTop=1e9;}});
     bubble.innerHTML=md(text); turns.push({role:"assistant",content:text}); if(truncated)$("#aiStatus").textContent="回答被截斷，可以請它繼續。";
     if(turns.length>16) turns=turns.slice(-16);
-  }catch(err){ turns.pop(); if(err.text){bubble.innerHTML=md(err.text);} else bubble.textContent=err.code==="unavailable"?NO_AI:errCopy(err.code); }
+  }catch(err){ turns.pop(); if(err.text){bubble.innerHTML=md(err.text);} else bubble.textContent=aiErr(err); }
   finally{ ctl=null; $("#aiStop").hidden=true; $("#aiSend").disabled=false; }
 });
 $("#aiInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("#aiForm").requestSubmit();}});
@@ -432,5 +427,6 @@ function route(){
 }
 window.addEventListener("hashchange",route);
 route();
-getSample().then(s=>{ if(!s){ $("#aiOpen").title="在 claude.ai 開啟才能使用 AI 助教"; } });
+$("#aiSet").onclick=()=>window.AI.openSettings();
+document.addEventListener("ai-config-changed",updateCtx);
 })();

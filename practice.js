@@ -268,9 +268,8 @@ async function codeAI(kind,label,n){
 \`\`\`matlab
 ${src}
 \`\`\``;
-  try{ const s=window.claude&&window.claude.use?await window.claude.use("sample"):null; if(!s) throw {code:"unavailable"};
-    await s(prompt,{cache:false,onText:({text})=>{body.innerHTML=mdLite(text);}});
-  }catch(e){ body.textContent=e.code==="unavailable"?"這個環境無法使用 AI 助教，請在 claude.ai 開啟此頁面。":e.code==="not_granted"?"你沒有允許這個頁面使用 Claude。":"AI 暫時無法回應（"+(e.code||"錯誤")+"）。"; }
+  try{ await window.AI.ask(prompt,{onText:({text})=>{body.innerHTML=mdLite(text);}}); }
+  catch(e){ body.textContent=window.AI.errText(e); }
 }
 function strip(h){return String(h).replace(/<[^>]+>/g,"");}
 function mdLite(t){

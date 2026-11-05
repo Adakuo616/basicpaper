@@ -23,7 +23,7 @@
 - **學習網路圖**：把學習路線畫成 s→t 的流量網路。掌握一站，它的出弧就會通電，開放下一站。
 - **每站深度內容**：動機、模型、定義、定理與證明思路、演算法、數值範例、複雜度、邊界情況、貢獻與延伸。
 - **自我檢測**：選項每次重新洗牌，答錯不直接公布答案；另有開放題，要求用自己的話說明。
-- **AI 助教**（需在 claude.ai 開啟）：自由問答、考考我（蘇格拉底式）、批改我的說明，以及 ELI5／ELI14／實習生／研究生深挖四種解釋層次。
+- **AI 助教**：在 claude.ai 使用內建的 Claude；在 GitHub 網頁或本機，於「AI 設定」輸入實驗室通行碼（經由 `proxy/` 的代理伺服器使用實驗室的 GPT），或輸入個人的 OpenAI API key。功能有自由問答、考考我（蘇格拉底式）、批改我的說明，以及 ELI5／ELI14／實習生／研究生深挖四種解釋層次。
 - **演算法實驗室**：逐步重現 P1、P2、P7 的數值（d-MP、d-MC、最快路徑下邊界點與可靠度）。
 - **練習題**：實驗室 Excel 練習的互動版（RSDP 手算、論文 3 節點故障、論文 6 窮舉、多路徑最快路徑加預算）。
 - **程式教學**：51 支 MATLAB 程式的導讀，標出每支對應的論文步驟、資料格式約定與注意事項，並可請 AI 逐行解釋、對應論文、找問題或改寫成 Python。
@@ -46,5 +46,7 @@
 - `vault/`：加密的論文、簡報、研究工具，以及 MATLAB 程式和 Excel 練習（`practice-data.json`）
 - `dashboard.html`：頁面原始檔（claude.ai 儀表板使用）；`index.html` 由 `python3 build_index.py` 產生，供 GitHub Pages 使用
 - `scripts/encrypt_vault.js`：重新加密檔案庫
+- `ai.js`：AI 連線（Claude／實驗室代理／個人 OpenAI key）與「AI 設定」視窗
+- `proxy/`：實驗室 AI 代理伺服器（Cloudflare Worker）與部署教學
 
-開啟 GitHub Pages 後即可直接用網址瀏覽；在本機請用 `python3 -m http.server` 開啟（解密需要 https 或 localhost）。AI 助教只在 claude.ai 的儀表板上能用。
+開啟 GitHub Pages 後即可直接用網址瀏覽；在本機請用 `python3 -m http.server` 開啟（解密需要 https 或 localhost）。AI 助教的設定方式見上方「AI 助教」說明與 `proxy/README.md`。

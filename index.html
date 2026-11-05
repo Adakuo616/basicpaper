@@ -193,6 +193,7 @@ pre.code .cm{color:var(--ok)}
 .vault-scrim{position:fixed;inset:0;z-index:60;background:rgba(10,14,22,.45);display:grid;place-items:center;padding:16px}
 .vault-box{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px 22px;width:min(420px,100%);display:grid;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
 .vault-box h2{font-size:18px}
+.vault-box label{display:grid;gap:4px}
 
 /* 檢查清單 */
 .cl-group{margin-bottom:16px}
@@ -246,6 +247,7 @@ pre.code .cm{color:var(--ok)}
     <a href="#checklist" data-nav="checklist">理解檢查清單</a>
   </nav>
   <div class="prog" title="已掌握的站點"><span id="progTxt">0 / 11</span><span class="bar"><i id="progBar"></i></span></div>
+  <button class="btn" id="aiSet" type="button" title="設定 AI 模型（OpenAI API key）">AI 設定</button>
   <button class="ai-btn" id="aiOpen" type="button">AI 助教</button>
 </div></header>
 
@@ -319,6 +321,7 @@ pre.code .cm{color:var(--ok)}
 </aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="ai.js"></script>
 <script src="vault.js"></script>
 <script src="papers.js"></script>
 <script src="practice-data.js"></script>
