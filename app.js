@@ -52,6 +52,38 @@ function drawMap(){
 }
 $("#freeMode").addEventListener("change",e=>{st.free=e.target.checked;save();drawMap();});
 
+/* ---------- 原文（內部使用：PDF 與出版社連結） ---------- */
+const scholar=t=>"https://scholar.google.com/scholar?q="+encodeURIComponent('"'+t+'"');
+const doi=d=>"https://doi.org/"+d;
+const ORIG={
+  p1:{pdf:"pdf/P1_1995_Lin_Jane_Yuan_Networks.pdf",ppt:"pdf/P1_1995_slides.pdf",link:scholar(byId.p1.title),lt:"Google Scholar 搜尋"},
+  p2:{pdf:"pdf/P2_1993_Jane_Lin_Yuan_IEEE_TR.pdf",link:scholar(byId.p2.title),lt:"Google Scholar 搜尋"},
+  p3:{pdf:"pdf/P3_2001_Lin_COR_node_failure.pdf",link:doi("10.1016/S0305-0548(00)00039-3"),lt:"DOI 10.1016/S0305-0548(00)00039-3"},
+  p4:{pdf:"pdf/P4_2001_Lin_CAMWA_multicommodity.pdf",link:doi("10.1016/S0898-1221(01)00149-3"),lt:"DOI 10.1016/S0898-1221(01)00149-3"},
+  p5:{pdf:"pdf/P5_2007_Lin_COR_two_commodity.pdf",link:doi("10.1016/j.cor.2005.11.013"),lt:"DOI 10.1016/j.cor.2005.11.013"},
+  p6:{pdf:"pdf/P6_2002_Lin_JORSJ_project.pdf",link:scholar(byId.p6.title),lt:"Google Scholar 搜尋"},
+  p7:{pdf:"pdf/P7_2003_Lin_COR_quickest_path.pdf",link:doi("10.1016/S0305-0548(02)00025-4"),lt:"DOI 10.1016/S0305-0548(02)00025-4"},
+  p8:{pdf:"pdf/P8_2010_Lin_IEEE_TR_spare_routing.pdf",link:doi("10.1109/TR.2010.2040765"),lt:"DOI 10.1109/TR.2010.2040765"},
+  p9:{pdf:"pdf/P9_2011_Lin_Yeh_ASOC_GA.pdf",link:doi("10.1016/j.asoc.2010.11.002"),lt:"DOI 10.1016/j.asoc.2010.11.002"}
+};
+function origRow(s){const o=ORIG[s.id];
+  return `<div class="orig"><span class="lbl">原文</span><button class="btn" type="button" data-dl="${o.pdf}">下載 PDF</button>${o.ppt?`<button class="btn" type="button" data-dl="${o.ppt}">下載簡報（PDF）</button>`:""}<a class="btn" href="${o.link}" target="_blank" rel="noopener">${esc(o.lt)} ↗</a><span class="note dlmsg"></span></div>`;}
+let dlPromise=null;
+async function downloadOrig(btn){
+  const path=btn.dataset.dl, msg=btn.parentElement.querySelector(".dlmsg"), name=path.split("/").pop();
+  btn.disabled=true; msg.textContent="準備檔案中…";
+  try{
+    if(!dlPromise) dlPromise=(window.claude&&window.claude.use)?window.claude.use("downloads").catch(()=>null):Promise.resolve(null);
+    const dl=await dlPromise;
+    const res=await fetch(path); if(!res.ok) throw {code:"missing"};
+    const blob=await res.blob();
+    if(!dl){ const u=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); msg.textContent=""; return; }
+    await dl.save({filename:name,data:blob}); msg.textContent="已送出下載："+name;
+  }catch(e){
+    msg.textContent=e.code==="missing"?"這個版本沒有附上原文檔案。":e.code==="declined"?"已取消下載。":e.code==="rate_limited"?"已有下載視窗開著，請稍後再試。":"目前無法下載（"+(e.code||"錯誤")+"），請改用出版社連結。";
+  }finally{ btn.disabled=false; }
+}
+
 /* ---------- 站點頁 ---------- */
 const LEVELS=[["eli5","ELI5（像對五歲小孩）"],["eli14","ELI14（像對國中生）"],["intern","實習生版"],["deep","研究生深挖"]];
 function shuffleIdx(n){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -79,6 +111,7 @@ function renderStation(id){
       <div class="crumb"><a href="#map">學習網路圖</a> › ${s.short} <span class="chip ${chipCls[k]}">${stateText[k]}</span></div>
       <h1>${s.kind==="hub"?esc(s.title):esc(s.title)}</h1>
       ${s.venue?`<div class="cite">論文 ${s.no} · ${esc(s.authors)} · <i>${esc(s.venue)}</i> (${s.year})</div>`:""}
+      ${ORIG[s.id]?origRow(s):""}
       ${s.tag?`<div class="tag">${s.tag}</div>`:""}
     </div><button class="btn" type="button" id="askHere">就這一站問 AI</button></div>
     ${k==="locked"?`<div class="sec" style="border-color:var(--flow)"><b>這一站尚未開放。</b>建議先掌握：${s.pre.map(p=>`<a href="#${p}">${byId[p].short} ${esc(byId[p].label)}</a>`).join("、")}。也可以在學習網路圖上開啟「自由探索模式」。</div>`:""}
@@ -88,6 +121,7 @@ function renderStation(id){
     <div>${secs.map(x=>`<section class="sec" id="sec-${x[0]}">${x[2]}</section>`).join("")}
     <div class="pager">${prev?`<a class="btn" href="#${prev.id}">← ${prev.short} ${esc(prev.label)}</a>`:"<span></span>"}${next?`<a class="btn" href="#${next.id}">${next.short} ${esc(next.label)} →</a>`:""}</div></div></div>`;
 
+  v.querySelectorAll("[data-dl]").forEach(b=>b.addEventListener("click",()=>downloadOrig(b)));
   v.querySelectorAll("[data-jump]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();document.getElementById(a.dataset.jump).scrollIntoView();}));
   renderQuiz(s);
   v.querySelectorAll("[data-level]").forEach(b=>b.addEventListener("click",()=>explain(s,b.dataset.level,b.textContent)));
