@@ -173,6 +173,13 @@ tr.no td{color:var(--muted)}
 .steps button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
 .note{font-size:13.5px;color:var(--muted)}
 
+/* 程式碼 */
+pre.code{font-family:var(--f-mono);font-size:12.5px;line-height:1.6;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;max-height:560px;margin:8px 0 0;white-space:pre;tab-size:4}
+pre.code .ln{display:inline-block;width:3.2em;color:var(--muted);opacity:.6;user-select:none}
+pre.code .kw{color:var(--accent);font-weight:600}
+pre.code .cm{color:var(--ok)}
+.ai-out pre.code{font-size:12px}
+
 /* 檢查清單 */
 .cl-group{margin-bottom:16px}
 .cl-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)}
@@ -219,6 +226,8 @@ tr.no td{color:var(--muted)}
   <nav class="nav" aria-label="主要">
     <a href="#map" data-nav="map">學習網路圖</a>
     <a href="#lab" data-nav="lab">演算法實驗室</a>
+    <a href="#practice" data-nav="practice">練習題</a>
+    <a href="#code" data-nav="code">程式教學</a>
     <a href="#checklist" data-nav="checklist">理解檢查清單</a>
   </nav>
   <div class="prog" title="已掌握的站點"><span id="progTxt">0 / 11</span><span class="bar"><i id="progBar"></i></span></div>
@@ -259,6 +268,12 @@ tr.no td{color:var(--muted)}
   <!-- 實驗室 -->
   <section class="view" id="v-lab" hidden></section>
 
+  <!-- 練習題 -->
+  <section class="view" id="v-practice" hidden></section>
+
+  <!-- 程式教學 -->
+  <section class="view" id="v-code" hidden></section>
+
   <!-- 檢查清單 -->
   <section class="view" id="v-checklist" hidden></section>
 </main>
@@ -285,5 +300,8 @@ tr.no td{color:var(--muted)}
   </form>
 </aside>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="papers.js"></script>
+<script src="practice-data.js"></script>
+<script src="practice.js"></script>
 <script src="app.js"></script>

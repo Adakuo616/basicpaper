@@ -399,6 +399,12 @@ const CL=[
   ["qp","P7：能說明 Σl + ⌈d/v⌉ 的意義、為什麼最多 m 個下邊界點，以及容量水準不連續時的進位"],
   ["spare","P8：能說明分流、預算、備援公式的獨立性來源，以及「失效 ≠ 無法達標」的邊界情況"],
   ["ga","P9：能說明 TLAMNR 為何 NP-hard、GA 的編碼與修復、死亡懲罰，以及 RSDP 的 ⊕"]]],
+ ["程式實作（實驗室 MATLAB）",[
+  ["c-conv","能說明實驗室程式的三個資料格式約定：路徑矩陣存弧編號、存活函數與 CDF、索引 = 容量 + 1"],
+  ["c-rsdp","能手寫 RSDP 的遞迴式，說明各項為何不交，並在練習 1、2 重現 0.611415 與 0.8242"],
+  ["c-dmp","能說明 dMCs／dMPs 的比較邏輯（MATLAB 的 if 向量 = all），以及原資料夾缺少 dMPs.m 的影響"],
+  ["c-proj","能說明 UpperBoundary.m 的虛擬工期技巧為何補上論文演算法 I 的漏洞，以及 Project_reliability 公式的意義"],
+  ["c-qp","能指出 QP.m 與論文 7 的差異（d/ca 與 ⌈d/v⌉、沒有進位到容量水準），並說明 COST = Σc(L−x) 的來源"]]],
  ["更廣泛的背景脈絡",[
   ["template","能用五步模板統整九篇，並指出每篇在哪一步加了什麼"],
   ["assume","能指出共同假設（獨立、整數容量、MP/MC 已知、單一源匯點）以及放寬後的研究機會"],
@@ -416,13 +422,13 @@ function renderChecklist(){
 /* ---------- 路由 ---------- */
 function route(){
   const h=(location.hash||"#map").slice(1);
-  const views={map:"v-map",lab:"v-lab",checklist:"v-checklist"};
+  const views={map:"v-map",lab:"v-lab",checklist:"v-checklist",practice:"v-practice",code:"v-code"};
   const isSt=!!byId[h];
   document.querySelectorAll(".view").forEach(v=>v.hidden=true);
   document.querySelectorAll("[data-nav]").forEach(a=>a.removeAttribute("aria-current"));
   if(isSt){$("#v-station").hidden=false;renderStation(h);}
   else{const id=views[h]||"v-map";$("#"+id).hidden=false;const n=document.querySelector(`[data-nav="${views[h]?h:"map"}"]`);n&&n.setAttribute("aria-current","page");
-    if(id==="v-map"){drawMap();ctxId=null;} if(id==="v-lab")renderLab(); if(id==="v-checklist")renderChecklist();}
+    if(id==="v-map"){drawMap();ctxId=null;} if(id==="v-lab")renderLab(); if(id==="v-checklist")renderChecklist(); if(window.PRACTICE_VIEWS&&window.PRACTICE_VIEWS[h]) window.PRACTICE_VIEWS[h]();}
   window.scrollTo(0,0); updateProgress();
 }
 window.addEventListener("hashchange",route);
