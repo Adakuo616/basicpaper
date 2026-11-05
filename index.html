@@ -1,3 +1,12 @@
+<!doctype html>
+<!-- 由 build_index.py 自 dashboard.html 產生，請勿直接修改 -->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
 <title>流量網路可靠度學習網</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -180,6 +189,11 @@ pre.code .kw{color:var(--accent);font-weight:600}
 pre.code .cm{color:var(--ok)}
 .ai-out pre.code{font-size:12px}
 
+/* 密碼視窗 */
+.vault-scrim{position:fixed;inset:0;z-index:60;background:rgba(10,14,22,.45);display:grid;place-items:center;padding:16px}
+.vault-box{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px 22px;width:min(420px,100%);display:grid;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.vault-box h2{font-size:18px}
+
 /* 檢查清單 */
 .cl-group{margin-bottom:16px}
 .cl-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)}
@@ -228,6 +242,7 @@ pre.code .cm{color:var(--ok)}
     <a href="#lab" data-nav="lab">演算法實驗室</a>
     <a href="#practice" data-nav="practice">練習題</a>
     <a href="#code" data-nav="code">程式教學</a>
+    <a href="#files" data-nav="files">下載區</a>
     <a href="#checklist" data-nav="checklist">理解檢查清單</a>
   </nav>
   <div class="prog" title="已掌握的站點"><span id="progTxt">0 / 11</span><span class="bar"><i id="progBar"></i></span></div>
@@ -274,6 +289,9 @@ pre.code .cm{color:var(--ok)}
   <!-- 程式教學 -->
   <section class="view" id="v-code" hidden></section>
 
+  <!-- 下載區 -->
+  <section class="view" id="v-files" hidden></section>
+
   <!-- 檢查清單 -->
   <section class="view" id="v-checklist" hidden></section>
 </main>
@@ -301,7 +319,11 @@ pre.code .cm{color:var(--ok)}
 </aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="vault.js"></script>
 <script src="papers.js"></script>
 <script src="practice-data.js"></script>
 <script src="practice.js"></script>
 <script src="app.js"></script>
+
+</body>
+</html>

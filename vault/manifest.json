@@ -1,0 +1,133 @@
+{
+ "v": 1,
+ "kdf": {
+  "name": "PBKDF2",
+  "hash": "SHA-256",
+  "iterations": 600000,
+  "salt": "fNCsEjztj9GFa7wFzJra8w=="
+ },
+ "cipher": "AES-GCM-256",
+ "check": "j1dTJ7R23Ut8r45UunfXgTgMIj0aFAB/VfnrEZjLyzZ3Ua+ki/glhw==",
+ "files": [
+  {
+   "path": "pdf/P1_1995_Lin_Jane_Yuan_Networks.pdf",
+   "name": "P1_1995_Lin_Jane_Yuan_Networks.pdf",
+   "group": "論文原文",
+   "size": 3009911,
+   "enc": "vault/01.txt",
+   "sha256": "664737e7c256f5c552f3a83f0778b948434eef685460d7194a43f3f5e118fc6c"
+  },
+  {
+   "path": "pdf/P1_1995_slides.pdf",
+   "name": "P1_1995_slides.pdf",
+   "group": "簡報",
+   "size": 1054974,
+   "enc": "vault/02.txt",
+   "sha256": "51f7ada60c342d91abbb2eaeff7caafaeac1229bd603ef5aed536cab9ba86ee9"
+  },
+  {
+   "path": "pdf/P2_1993_Jane_Lin_Yuan_IEEE_TR.pdf",
+   "name": "P2_1993_Jane_Lin_Yuan_IEEE_TR.pdf",
+   "group": "論文原文",
+   "size": 694470,
+   "enc": "vault/03.txt",
+   "sha256": "f334f176109a9b24a7862f3769b5235c792f1c1826311d9a09668819a2edd671"
+  },
+  {
+   "path": "pdf/P3_2001_Lin_COR_node_failure.pdf",
+   "name": "P3_2001_Lin_COR_node_failure.pdf",
+   "group": "論文原文",
+   "size": 102733,
+   "enc": "vault/04.txt",
+   "sha256": "b81cc61a8a426e1d5d24bbf1f39bf35810350abac33afe261eebae4dca9f4d11"
+  },
+  {
+   "path": "pdf/P4_2001_Lin_CAMWA_multicommodity.pdf",
+   "name": "P4_2001_Lin_CAMWA_multicommodity.pdf",
+   "group": "論文原文",
+   "size": 606985,
+   "enc": "vault/05.txt",
+   "sha256": "a3a91253ecb423bf242b86b10e58ebc65ecfa7ab5080ecb63b36d56e1d0ca288"
+  },
+  {
+   "path": "pdf/P5_2007_Lin_COR_two_commodity.pdf",
+   "name": "P5_2007_Lin_COR_two_commodity.pdf",
+   "group": "論文原文",
+   "size": 200321,
+   "enc": "vault/06.txt",
+   "sha256": "fd340c694acce77e7732c9d2a816d6a9b40d8d8f2d732561c6cb6c4bc5680de4"
+  },
+  {
+   "path": "pdf/P6_2002_Lin_JORSJ_project.pdf",
+   "name": "P6_2002_Lin_JORSJ_project.pdf",
+   "group": "論文原文",
+   "size": 385476,
+   "enc": "vault/07.txt",
+   "sha256": "3fe1f563ce7364489b37621cd530c614bfd37c4bcd3d3b441b766c051772d1e8"
+  },
+  {
+   "path": "pdf/P7_2003_Lin_COR_quickest_path.pdf",
+   "name": "P7_2003_Lin_COR_quickest_path.pdf",
+   "group": "論文原文",
+   "size": 104805,
+   "enc": "vault/08.txt",
+   "sha256": "0a41316b110b87c5a11ac95fb34e3dc8592eaeba4311b8c875cad99091061544"
+  },
+  {
+   "path": "pdf/P8_2010_Lin_IEEE_TR_spare_routing.pdf",
+   "name": "P8_2010_Lin_IEEE_TR_spare_routing.pdf",
+   "group": "論文原文",
+   "size": 322141,
+   "enc": "vault/09.txt",
+   "sha256": "89c6575948e5193f810686af54ca254b7989cc083cbba8d123c49e1a78996539"
+  },
+  {
+   "path": "pdf/P9_2011_Lin_Yeh_ASOC_GA.pdf",
+   "name": "P9_2011_Lin_Yeh_ASOC_GA.pdf",
+   "group": "論文原文",
+   "size": 881003,
+   "enc": "vault/10.txt",
+   "sha256": "02091f7e0a075194abc78202716589bca5c5f4ecabc4897c420ac8022f854c92"
+  },
+  {
+   "path": "pdf/P1_1995_slides.pptx",
+   "name": "P1_1995_slides.pptx",
+   "group": "簡報",
+   "size": 1358641,
+   "enc": "vault/11.txt",
+   "sha256": "3f52890b8c2881c79afa5270d390280083e99aad82420207a2b315dc7740db03"
+  },
+  {
+   "path": "tools/EndNote_quick_start.pdf",
+   "name": "EndNote_quick_start.pdf",
+   "group": "研究工具",
+   "size": 3435847,
+   "enc": "vault/12.txt",
+   "sha256": "1658f457aba78055a6c4e0fc9a835850f7a02c58276bc3a8c9667cac4647187b"
+  },
+  {
+   "path": "tools/APA_thesis_structure.pdf",
+   "name": "APA_thesis_structure.pdf",
+   "group": "研究工具",
+   "size": 712393,
+   "enc": "vault/13.txt",
+   "sha256": "fb9c3adac90cd5942b4aaf4547fa5efbb6298be80cea5071d6a8b29bdb973434"
+  },
+  {
+   "path": "tools/APA_thesis_structure.pptx",
+   "name": "APA_thesis_structure.pptx",
+   "group": "研究工具",
+   "size": 617360,
+   "enc": "vault/14.txt",
+   "sha256": "96dc7398122a6d8a732dd7900adeccf406797ce0eb71acef71cbb3b5ef9ef944"
+  },
+  {
+   "path": "practice-data.json",
+   "name": "practice-data.json",
+   "group": "_data",
+   "size": 233217,
+   "enc": "vault/15.txt",
+   "sha256": "99bbcebf533f5f9ac5d0d3e72654e7935b081547f4c929588c19c89ec2fde2e0"
+  }
+ ]
+}

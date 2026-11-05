@@ -6,7 +6,9 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const vec=v=>"("+v.join(",")+")";
 const leq=(a,b)=>a.every((x,i)=>x<=b[i]);
 const D=()=>window.PRACTICE_DATA;
-const NODATA=`<div class="card"><b>這個版本沒有附上練習檔與程式原始碼。</b><p class="note">原始碼與 Excel 練習檔只隨內部儀表板發布，沒有放進 GitHub。</p></div>`;
+const NODATA=`<div class="card"><b>這部分的資料已加密。</b><p class="note">實驗室程式與 Excel 練習檔僅供內部使用，請輸入密碼解鎖。</p><div class="row" style="margin-top:8px"><button class="btn solid" type="button" data-unlock>輸入密碼解鎖</button><span class="note dlmsg"></span></div></div>`;
+function wireUnlock(root,again){root.querySelectorAll("[data-unlock]").forEach(b=>b.onclick=async()=>{const m=b.parentElement.querySelector(".dlmsg");
+  try{m.textContent="";await window.VAULT.loadPracticeData();again();}catch(e){m.textContent=window.VAULT?window.VAULT.errText(e):"這個版本沒有附上資料。";}});}
 
 /* ---------- 下載（downloads 能力；不在 claude.ai 時退回一般下載） ---------- */
 let dlP=null;
@@ -20,10 +22,12 @@ async function save(name,blob,msgEl){
   }catch(e){ msgEl&&(msgEl.textContent=e.code==="declined"?"已取消下載。":e.code==="rate_limited"?"已有下載視窗開著，請稍後再試。":"目前無法下載（"+(e.code||"錯誤")+"）。"); }
 }
 const b64blob=(b64,type)=>{const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new Blob([u],{type});};
+const XLSX_NAMES={"RSDP_MATLAB_practice.xlsx":"RSDP_MATLAB_practice.xlsx","論文6_JORSJ_練習.xlsx":"paper6_JORSJ_practice.xlsx","程式資料_QP_d128_T20_B20000.xlsx":"QP_program_data_d128_T20_B20000.xlsx"};
 const XLSX_T="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 function xlsxBtn(name,label){return `<button class="btn" type="button" data-xlsx="${esc(name)}">${label||"下載原始 Excel"}</button>`;}
-function wireXlsx(root){root.querySelectorAll("[data-xlsx]").forEach(b=>b.onclick=()=>{const d=D();const m=b.parentElement.querySelector(".dlmsg")||b.insertAdjacentElement("afterend",Object.assign(document.createElement("span"),{className:"note dlmsg"}));
-  if(!d){m.textContent="這個版本沒有附上 Excel 檔。";return;} save(b.dataset.xlsx,b64blob(d.xlsx[b.dataset.xlsx],XLSX_T),m);});}
+function wireXlsx(root){root.querySelectorAll("[data-xlsx]").forEach(b=>b.onclick=async()=>{const d=D();const m=b.parentElement.querySelector(".dlmsg")||b.insertAdjacentElement("afterend",Object.assign(document.createElement("span"),{className:"note dlmsg"}));
+  if(!d){try{await window.VAULT.loadPracticeData();}catch(e){m.textContent=window.VAULT?window.VAULT.errText(e):"這個版本沒有附上 Excel 檔。";return;}}
+  save(XLSX_NAMES[b.dataset.xlsx]||b.dataset.xlsx,b64blob(D().xlsx[b.dataset.xlsx],XLSX_T),m);});}
 
 /* ---------- RSDP（逐字對應 RSDP.m 的遞迴） ---------- */
 function minimalUniq(X){const u=[];X.forEach(v=>{if(!u.some(w=>w.join()===v.join()))u.push(v)});return u.filter(x=>!u.some(y=>y!==x&&leq(y,x)));}
@@ -117,6 +121,7 @@ function renderPractice(){
     <div class="steps" role="group" aria-label="練習" style="margin-top:12px">${tabs.map(t=>`<button type="button" data-ex="${t[0]}" aria-pressed="${ex===t[0]}">${t[1]}</button>`).join("")}</div>
     <div class="card" style="min-width:0">${body}</div>`;
   v.querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>{pst.ex=b.dataset.ex;pst.step=pst.ex==="rsdp1"?1:3;renderPractice();});
+  wireUnlock(v,renderPractice);
   v.querySelectorAll("[data-pstep]").forEach(b=>b.onclick=()=>{pst.step=+b.dataset.pstep;renderPractice();});
   wireXlsx(v);
   const ix=$("#inclX2"); if(ix) ix.onchange=()=>{pst.inclX2=ix.checked;renderPractice();};
@@ -214,7 +219,7 @@ function hl(src){
 }
 function renderCode(){
   const v=$("#v-code"), d=D();
-  if(!d){v.innerHTML=`<div class="eyebrow">程式教學</div><h1 style="font-size:28px;margin:4px 0 10px">從論文到程式</h1>`+NODATA;return;}
+  if(!d){v.innerHTML=`<div class="eyebrow">程式教學</div><h1 style="font-size:28px;margin:4px 0 10px">從論文到程式</h1>`+NODATA;wireUnlock(v,renderCode);return;}
   const files=Object.keys(d.code);
   const grp=f=>(NOTES[f]&&NOTES[f].g)||"other";
   const n=NOTES[cst.file]||{g:"other",paper:"其他研究主題",what:OTHER_DESC,io:"",walk:[],pit:[],think:""};
@@ -244,7 +249,7 @@ function renderCode(){
   $("#zipAll").onclick=async()=>{const m=$("#zipMsg");if(!window.JSZip){m.textContent="壓縮元件沒有載入，請重新整理後再試。";return;}
     const z=new JSZip();Object.entries(d.code).forEach(([k,s])=>z.file(k.replace("（補上）","_added_by_dashboard"),s));m.textContent="壓縮中…";
     const blob=await z.generateAsync({type:"blob"});save("MATLAB_reliability_code.zip",blob,m);};
-  v.querySelectorAll("[data-tool]").forEach(b=>b.onclick=async()=>{const m=b.parentElement.querySelector(".dlmsg");try{const r=await fetch(b.dataset.tool);if(!r.ok)throw 0;save(b.dataset.tool.split("/").pop(),await r.blob(),m);}catch(e){m.textContent="這個版本沒有附上這個檔案。";}});
+  v.querySelectorAll("[data-tool]").forEach(b=>b.onclick=async()=>{const m=b.parentElement.querySelector(".dlmsg");try{m.textContent="準備檔案中…";save(b.dataset.tool.split("/").pop(),await window.VAULT.fetchBlob(b.dataset.tool),m);}catch(e){m.textContent=window.VAULT.errText(e);}});
   v.querySelectorAll("[data-ai]").forEach(b=>b.onclick=()=>codeAI(b.dataset.ai,b.textContent,n));
 }
 async function codeAI(kind,label,n){
@@ -284,5 +289,30 @@ function mdLite(t){
   if(list)out+="</ul>"; if(pre||ind)out+="</pre>"; return out;
 }
 
-window.PRACTICE_VIEWS={practice:renderPractice,code:renderCode};
+/* ---------- 下載區 ---------- */
+async function renderFiles(){
+  const v=$("#v-files"); const m=await window.VAULT.getManifest();
+  const plainCode=!!D();
+  const groups={};(m?m.files:[]).filter(f=>f.group!=="_data").forEach(f=>{(groups[f.group]=groups[f.group]||[]).push(f);});
+  const kb=n=>n>1048576?(n/1048576).toFixed(1)+" MB":Math.round(n/1024)+" KB";
+  const locked=await window.VAULT.isLocked();
+  v.innerHTML=`<div class="eyebrow">下載區 · 僅供實驗室內部使用</div><h1 style="font-size:clamp(22px,3vw,30px);margin:4px 0 6px">論文、程式與練習檔</h1>
+  <p class="note" style="max-width:72ch">檔案以 AES-256 加密存放，第一次下載時會要求輸入密碼，同一個分頁之後不必再輸入。請勿將檔案或密碼轉傳給實驗室以外的人。</p>
+  <div class="row" style="margin:10px 0">${locked?`<button class="btn solid" type="button" id="fUnlock">輸入密碼解鎖</button>`:`<span class="chip ms">已解鎖</span><button class="btn" type="button" id="fLock">鎖上</button>`}<span class="note dlmsg" id="fMsg"></span></div>
+  ${m?Object.entries(groups).map(([g,fs])=>`<div class="card cl-group"><h3>${esc(g)}</h3>${fs.map(f=>`<div class="cl-item" style="align-items:center;justify-content:space-between"><span class="mono" style="overflow-wrap:anywhere">${esc(f.name)} <span class="note">${kb(f.size)}</span></span><span class="row"><button class="btn" type="button" data-get="${esc(f.path)}">下載</button><span class="note dlmsg"></span></span></div>`).join("")}</div>`).join(""):`<div class="card"><p class="note">這個版本沒有附上加密檔案庫。</p></div>`}
+  <div class="card cl-group"><h3>實驗室程式與練習</h3>
+    <div class="cl-item" style="align-items:center;justify-content:space-between"><span>全部 MATLAB 程式（51 支，.zip）</span><span class="row"><button class="btn" type="button" id="fZip">下載</button><span class="note dlmsg"></span></span></div>
+    ${["RSDP_MATLAB_practice.xlsx","論文6_JORSJ_練習.xlsx","程式資料_QP_d128_T20_B20000.xlsx"].map(n=>`<div class="cl-item" style="align-items:center;justify-content:space-between"><span class="mono">${esc(n)}</span><span class="row">${xlsxBtn(n,"下載")}<span class="note dlmsg"></span></span></div>`).join("")}</div>`;
+  wireXlsx(v);
+  const fu=$("#fUnlock"); if(fu) fu.onclick=async()=>{try{await window.VAULT.ensureUnlocked();renderFiles();}catch(e){$("#fMsg").textContent=window.VAULT.errText(e);}};
+  const fl=$("#fLock"); if(fl) fl.onclick=()=>{window.VAULT.lock();if(!plainCode)window.PRACTICE_DATA=undefined;renderFiles();};
+  v.querySelectorAll("[data-get]").forEach(b=>b.onclick=async()=>{const msg=b.parentElement.querySelector(".dlmsg");b.disabled=true;
+    try{msg.textContent="解密中…";save(b.dataset.get.split("/").pop(),await window.VAULT.fetchBlob(b.dataset.get),msg);}catch(e){msg.textContent=window.VAULT.errText(e);}finally{b.disabled=false;}});
+  $("#fZip").onclick=async()=>{const msg=$("#fZip").parentElement.querySelector(".dlmsg");
+    try{const d=D()||await window.VAULT.loadPracticeData(); if(!window.JSZip){msg.textContent="壓縮元件沒有載入，請重新整理後再試。";return;}
+      const z=new JSZip();Object.entries(d.code).forEach(([k,s])=>z.file(k.replace("（補上）","_added_by_dashboard"),s));msg.textContent="壓縮中…";save("MATLAB_reliability_code.zip",await z.generateAsync({type:"blob"}),msg);}
+    catch(e){msg.textContent=window.VAULT.errText(e);}};
+}
+
+window.PRACTICE_VIEWS={practice:renderPractice,code:renderCode,files:renderFiles};
 })();

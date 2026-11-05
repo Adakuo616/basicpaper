@@ -1,5 +1,12 @@
+# 未加密的原始檔絕對不能提交（repo 為公開）
 pdf/
+tools/
+materials/
+practice-data.js
+practice-data.json
 *.pdf
 *.pptx
-practice-data.js
-tools/
+*.xlsx
+*.m
+*.zip
+*.rar

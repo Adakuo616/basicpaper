@@ -75,12 +75,11 @@ async function downloadOrig(btn){
   try{
     if(!dlPromise) dlPromise=(window.claude&&window.claude.use)?window.claude.use("downloads").catch(()=>null):Promise.resolve(null);
     const dl=await dlPromise;
-    const res=await fetch(path); if(!res.ok) throw {code:"missing"};
-    const blob=await res.blob();
+    const blob=await window.VAULT.fetchBlob(path);
     if(!dl){ const u=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); msg.textContent=""; return; }
     await dl.save({filename:name,data:blob}); msg.textContent="已送出下載："+name;
   }catch(e){
-    msg.textContent=e.code==="missing"?"這個版本沒有附上原文檔案。":e.code==="declined"?"已取消下載。":e.code==="rate_limited"?"已有下載視窗開著，請稍後再試。":"目前無法下載（"+(e.code||"錯誤")+"），請改用出版社連結。";
+    msg.textContent=["cancelled","missing","corrupt","no_vault","wrong"].includes(e.code)?window.VAULT.errText(e):e.code==="declined"?"已取消下載。":e.code==="rate_limited"?"已有下載視窗開著，請稍後再試。":"目前無法下載（"+(e.code||"錯誤")+"），請改用出版社連結。";
   }finally{ btn.disabled=false; }
 }
 
@@ -422,7 +421,7 @@ function renderChecklist(){
 /* ---------- 路由 ---------- */
 function route(){
   const h=(location.hash||"#map").slice(1);
-  const views={map:"v-map",lab:"v-lab",checklist:"v-checklist",practice:"v-practice",code:"v-code"};
+  const views={map:"v-map",lab:"v-lab",checklist:"v-checklist",practice:"v-practice",code:"v-code",files:"v-files"};
   const isSt=!!byId[h];
   document.querySelectorAll(".view").forEach(v=>v.hidden=true);
   document.querySelectorAll("[data-nav]").forEach(a=>a.removeAttribute("aria-current"));

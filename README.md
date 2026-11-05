@@ -29,13 +29,22 @@
 - **程式教學**：51 支 MATLAB 程式的導讀，標出每支對應的論文步驟、資料格式約定與注意事項，並可請 AI 逐行解釋、對應論文、找問題或改寫成 Python。
 - **理解檢查清單**：另見 `LEARNING_CHECKLIST.md`。
 
-> 原文 PDF、MATLAB 原始碼（`practice-data.js`）與研究工具 PDF 只隨內部儀表板發布，不放進這個 repo。
+## 檔案下載與密碼
+
+論文原文、實驗室 MATLAB 程式、Excel 練習與研究工具都以 **AES-256-GCM 加密**（金鑰由 PBKDF2-SHA256 推導 60 萬次）存放在 `vault/`。這個 repo 可以公開，但沒有密碼的人只會拿到無法讀取的密文。
+
+- 在網頁的「下載區」或任一下載按鈕輸入密碼即可解密下載，解密完全在瀏覽器內進行，同一個分頁只需輸入一次。
+- **密碼不在 repo 裡**，請向管理者索取，僅限實驗室內部使用，請勿外流。
+- 新增或更新檔案：準備好原始檔資料夾後執行 `VAULT_PASSWORD=… node scripts/encrypt_vault.js <資料夾>`，再提交 `vault/`。**原始檔絕對不要提交**（`.gitignore` 已排除 PDF、pptx、xlsx、.m 等檔案）。
 
 ## 檔案
 
-- `index.html`：頁面與樣式
 - `papers.js`：九篇論文的知識庫（同時供 AI 助教當作脈絡）
 - `app.js`：互動邏輯、計算引擎、AI 串接
 - `practice.js`：練習題與程式教學的頁面邏輯和程式導讀
+- `vault.js`：解密模組（密碼視窗、解密、驗證）
+- `vault/`：加密的論文、簡報、研究工具，以及 MATLAB 程式和 Excel 練習（`practice-data.json`）
+- `dashboard.html`：頁面原始檔（claude.ai 儀表板使用）；`index.html` 由 `python3 build_index.py` 產生，供 GitHub Pages 使用
+- `scripts/encrypt_vault.js`：重新加密檔案庫
 
-直接用瀏覽器開啟 `index.html` 即可使用（AI 助教除外）。
+開啟 GitHub Pages 後即可直接用網址瀏覽；在本機請用 `python3 -m http.server` 開啟（解密需要 https 或 localhost）。AI 助教只在 claude.ai 的儀表板上能用。
